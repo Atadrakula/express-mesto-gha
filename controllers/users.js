@@ -3,13 +3,13 @@ const User = require('../models/user');
 const getAllUsers = (req, res) => {
   User.find({})
     .then(user => res.send({ data: user }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка на сервере при получении данных обо всех пользователях' }));
+    .catch((err) => res.status(500).send({ message: 'Произошла ошибка на сервере при получении данных обо всех пользователях', error: err.message }));
 };
 
 const getUserId = (req, res) => {
   User.findById(req.params.id)
     .then(user => res.send({ data: user }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка на сервере при получении ID юзера' }));
+    .catch((err) => res.status(500).send({ message: 'Произошла ошибка на сервере при получении ID юзера', error: err.message }));
 };
 
 const createNewUser = (req, res) => {
@@ -17,7 +17,7 @@ const createNewUser = (req, res) => {
 
   User.create({ name, about, avatar })
     .then(user => res.send({ data: user }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка на сервере при создании нового пользователя' }));
+    .catch((err) => res.status(500).send({ message: 'Произошла ошибка на сервере при создании нового пользователя', error: err.message }));
 }
 
 
