@@ -37,7 +37,7 @@ const deleteIdCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        next(new NotFoundError(`Переданы некорректный cardId: ${cardId} при удалении карточки`));
+        next(new BadRequestError(`Переданы некорректный cardId: ${cardId} при удалении карточки`));
       } else {
         next(new ServerError());
       }
