@@ -1,29 +1,81 @@
+const ServerError = require('../errors/serverError');
+const BadRequestError = require('../errors/badRequestError');
+const NotFoundError = require('../errors/notFoundError');
 const User = require('../models/user');
 
-const getAllUsers = (req, res) => {
+const getAllUsers = (req, res, next) => {
   User.find({})
-    .then(user => res.send({ data: user }))
-    .catch((err) => res.status(500).send({ message: 'Произошла ошибка на сервере при получении данных обо всех пользователях', error: err.message }));
+    .then((users) => res.send({ data: users }))
+    .catch(() => next(new ServerError()));
 };
 
-const getUserId = (req, res) => {
-  User.findById(req.params.id)
-    .then(user => res.send({ data: user }))
-    .catch((err) => res.status(500).send({ message: 'Произошла ошибка на сервере при получении ID юзера', error: err.message }));
+const getUserId = (req, res, next) => {
+  const { userId } = req.params;
+
+  User.findById(userId)
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new NotFoundError(`Пользователь с указанным userId: ${userId} не найден`));
+      } else {
+        next(new ServerError());
+      }
+    });
 };
 
-const createNewUser = (req, res) => {
+const createNewUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then(user => res.send({ data: user }))
-    .catch((err) => res.status(500).send({ message: 'Произошла ошибка на сервере при создании нового пользователя', error: err.message }));
-}
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
+      } else {
+        next(new ServerError());
+      }
+    });
+};
 
+const updateUserProfile = (req, res, next) => {
+  const { ...props } = req.body;
+
+  User.findByIdAndUpdate(req.user._id, { ...props }, { new: true, runValidators: true })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'ValidationError' || err.name === 'StrictModeError') {
+        next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
+      } else if (err.name === 'CastError') {
+        next(new NotFoundError(`Пользователь с указанным ${req.user._id} не найден`));
+      } else {
+        next(new ServerError());
+      }
+    });
+};
+
+const updateUserAvatar = (req, res, next) => {
+  const { avatar } = req.body;
+
+  if (!avatar) {
+    return next(new BadRequestError('Переданы некорректные данные при обновлении аватара'));
+  }
+  return User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'ValidationError' || err.name === 'StrictModeError') {
+        next(new BadRequestError('Переданы некорректные данные при обновлении аватара'));
+      } else if (err.name === 'CastError') {
+        next(new NotFoundError(`Пользователь с указанным ${req.user._id} не найден`));
+      } else {
+        next(new ServerError());
+      }
+    });
+};
 
 module.exports = {
   getAllUsers,
   getUserId,
-  createNewUser
-}
-
+  createNewUser,
+  updateUserProfile,
+  updateUserAvatar,
+};
