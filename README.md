@@ -24,7 +24,7 @@
 
 **Ссылка на публикацию GitHub Pages**
 
-* [Ссылка на публикацию GitHub Pages](https://atadrakula.github.io/mesto/)
+* [Ссылка на публикацию GitHub Pages](https://atadrakula.github.io/express-mesto-gha/)
 
 **Планы по доработке**
 
