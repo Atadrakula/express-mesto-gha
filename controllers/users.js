@@ -13,10 +13,15 @@ const getUserId = (req, res, next) => {
   const { userId } = req.params;
 
   User.findById(userId)
-    .then((user) => res.send({ data: user }))
+    .then((user) => {
+      if (!user) {
+        next(new NotFoundError(`Пользователь с указанным userId: ${userId} не найден`));
+      }
+      res.send({ data: user });
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new NotFoundError(`Пользователь с указанным userId: ${userId} не найден`));
+        next(new BadRequestError(`Некорректный формат userId: ${userId}`));
       } else {
         next(new ServerError());
       }
