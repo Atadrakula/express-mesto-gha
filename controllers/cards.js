@@ -15,7 +15,7 @@ const createNewCard = (req, res, next) => {
   const owner = req.user._id;
 
   Card.create({ name, link, owner })
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.status(201).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные при создании карточки'));
@@ -29,14 +29,12 @@ const deleteIdCard = (req, res, next) => {
   const { cardId } = req.params;
 
   Card.findByIdAndRemove(cardId)
-    .then((card) => {
-      if (!card) {
-        return next(new NotFoundError(`Карточка с указанным cardId: ${cardId} не найдена`));
-      }
-      return res.send({ data: card });
-    })
+    .orFail()
+    .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'DocumentNotFoundError') {
+        next(new NotFoundError(`Карточка с указанным cardId: ${cardId} не найдена`));
+      } else if (err.name === 'CastError' || err.name === 'ValidationError') {
         next(new BadRequestError(`Переданы некорректный cardId: ${cardId} при удалении карточки`));
       } else {
         next(new ServerError());

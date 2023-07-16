@@ -13,14 +13,12 @@ const getUserId = (req, res, next) => {
   const { userId } = req.params;
 
   User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        next(new NotFoundError(`Пользователь с указанным userId: ${userId} не найден`));
-      }
-      res.send({ data: user });
-    })
+    .orFail()
+    .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'DocumentNotFoundError') {
+        next(new NotFoundError(`Пользователь с указанным userId: ${userId} не найден`));
+      } else if (err.name === 'CastError') {
         next(new BadRequestError(`Некорректный формат userId: ${userId}`));
       } else {
         next(new ServerError());
@@ -32,7 +30,7 @@ const createNewUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.status(201).send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
