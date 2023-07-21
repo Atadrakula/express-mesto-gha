@@ -1,7 +1,34 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const ServerError = require('../errors/serverError');
 const BadRequestError = require('../errors/badRequestError');
 const NotFoundError = require('../errors/notFoundError');
 const User = require('../models/user');
+const UnauthorizedError = require('../errors/unauthorizedError');
+
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key');
+
+      res.cookie('jwt', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+        sameSite: 'strict', // пока как заглушка - ИЗУЧИТЬ!
+      });
+
+      res.send({ token });
+    })
+    .catch((err) => {
+      if (err.name === 'AuthenticationError') {
+        next(new UnauthorizedError());
+      } else {
+        next(new ServerError());
+      }
+    });
+};
 
 const getAllUsers = (req, res, next) => {
   User.find({})
@@ -27,9 +54,13 @@ const getUserId = (req, res, next) => {
 };
 
 const createNewUser = (req, res, next) => {
-  const { name, about, avatar } = req.body;
-
-  User.create({ name, about, avatar })
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => res.status(201).send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -81,4 +112,5 @@ module.exports = {
   createNewUser,
   updateUserProfile,
   updateUserAvatar,
+  login,
 };
