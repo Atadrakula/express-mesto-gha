@@ -2,6 +2,7 @@ const Card = require('../models/card');
 const ServerError = require('../errors/serverError');
 const BadRequestError = require('../errors/badRequestError');
 const NotFoundError = require('../errors/notFoundError');
+const ForbiddenError = require('../errors/forbiddenError');
 
 const getAllCards = (req, res, next) => {
   Card.find({})
@@ -27,9 +28,16 @@ const createNewCard = (req, res, next) => {
 
 const deleteIdCard = (req, res, next) => {
   const { cardId } = req.params;
+  const userId = req.user._id;
 
-  Card.findByIdAndRemove(cardId)
+  Card.findById(cardId)
     .orFail()
+    .then((card) => {
+      if (card.owner.toString() !== userId) {
+        throw new ForbiddenError();
+      }
+      return Card.findByIdAndRemove(cardId);
+    })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {

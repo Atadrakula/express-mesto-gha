@@ -37,12 +37,24 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Поле "password" должно быть заполнено'],
     minlength: [8, 'Минимальная длина поля "password" - 8'],
+    select: false,
   },
-}, { strict: 'throw', versionKey: false });
+}, {
+  strict: 'throw',
+  versionKey: false,
+  toJSON: {
+    // eslint-disable-next-line no-unused-vars
+    transform(doc, ret, options) {
+      // eslint-disable-next-line no-param-reassign
+      delete ret.password;
+      return ret;
+    },
+  },
+});
 
 // eslint-disable-next-line func-names
 userSchema.statics.findUserByCredentials = function (email, password) {
-  return this.findOne({ email })
+  return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
         throw new UnauthorizedError();
