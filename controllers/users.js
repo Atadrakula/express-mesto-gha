@@ -1,20 +1,16 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const ServerError = require('../errors/serverError');
 const BadRequestError = require('../errors/badRequestError');
 const NotFoundError = require('../errors/notFoundError');
 const ConflictError = require('../errors/conflictError');
 const User = require('../models/user');
-const UnauthorizedError = require('../errors/unauthorizedError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => res.send({ data: user }))
-    .catch(() => {
-      next(new ServerError());
-    });
+    .catch(next);
 };
 
 const login = (req, res, next) => {
@@ -35,19 +31,13 @@ const login = (req, res, next) => {
 
       res.send({ token });
     })
-    .catch((err) => {
-      if (err.name === 'AuthenticationError') {
-        next(new UnauthorizedError());
-      } else {
-        next(new ServerError());
-      }
-    });
+    .catch(next);
 };
 
 const getAllUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => next(new ServerError()));
+    .catch(next);
 };
 
 const getUserId = (req, res, next) => {
@@ -62,7 +52,7 @@ const getUserId = (req, res, next) => {
       } else if (err.name === 'CastError') {
         next(new BadRequestError(`Некорректный формат userId: ${userId}`));
       } else {
-        next(new ServerError());
+        next(err);
       }
     });
 };
@@ -82,7 +72,7 @@ const createNewUser = (req, res, next) => {
       } else if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
       } else {
-        next(new ServerError());
+        next(err);
       }
     });
 };
@@ -98,7 +88,7 @@ const updateUserProfile = (req, res, next) => {
       } else if (err.name === 'CastError') {
         next(new NotFoundError(`Пользователь с указанным ${req.user._id} не найден`));
       } else {
-        next(new ServerError());
+        next(err);
       }
     });
 };
@@ -117,7 +107,7 @@ const updateUserAvatar = (req, res, next) => {
       } else if (err.name === 'CastError') {
         next(new NotFoundError(`Пользователь с указанным ${req.user._id} не найден`));
       } else {
-        next(new ServerError());
+        next(err);
       }
     });
 };
