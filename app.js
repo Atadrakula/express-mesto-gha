@@ -2,9 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
+const { celebrate, errors } = require('celebrate');
 const NotFoundError = require('./errors/notFoundError');
 const { createNewUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const { celebrateUserLoginSchema, celebrateUserRegisterSchema, celebrateUserAuthSchema } = require('./middlewares/celebrateCard');
 
 const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
@@ -22,10 +24,10 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 
-app.post('/signin', login);
-app.post('/signup', createNewUser);
+app.post('/signin', celebrate(celebrateUserLoginSchema), login);
+app.post('/signup', celebrate(celebrateUserRegisterSchema), createNewUser);
 
-app.use(auth);
+app.use(celebrate(celebrateUserAuthSchema), auth);
 
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
@@ -33,6 +35,8 @@ app.use('/cards', require('./routes/cards'));
 app.use('*', (req, res, next) => {
   next(new NotFoundError());
 });
+
+app.use(errors());
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
