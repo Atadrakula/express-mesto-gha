@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const celebrate = require('celebrate');
+const { celebrate } = require('celebrate');
 const { celebrateСreateNewCardSchema, celebrateCardIdSchema } = require('../middlewares/celebrateCard');
 const {
   getAllCards, createNewCard, deleteIdCard, likeCard, dislikeCard,
