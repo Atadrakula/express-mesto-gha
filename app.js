@@ -6,7 +6,7 @@ const { celebrate, errors } = require('celebrate');
 const NotFoundError = require('./errors/notFoundError');
 const { createNewUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
-const { celebrateUserLoginSchema, celebrateUserRegisterSchema, celebrateUserAuthSchema } = require('./middlewares/celebrateUser');
+const { celebrateUserLoginSchema, celebrateUserRegisterSchema } = require('./middlewares/celebrateUser');
 
 const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 const app = express();
@@ -26,7 +26,7 @@ app.use(express.json());
 app.post('/signin', celebrate(celebrateUserLoginSchema), login);
 app.post('/signup', celebrate(celebrateUserRegisterSchema), createNewUser);
 
-app.use(celebrate(celebrateUserAuthSchema), auth);
+app.use(auth);
 
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));

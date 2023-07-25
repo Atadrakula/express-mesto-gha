@@ -19,12 +19,6 @@ const celebrateUserRegisterSchema = {
   }),
 };
 
-const celebrateUserAuthSchema = {
-  [Segments.HEADERS]: Joi.object({
-    authorization: Joi.string().pattern(/^Bearer .*/).required(),
-  }).unknown(),
-};
-
 const celebrateUserGetUserIdSchema = {
   [Segments.PARAMS]: Joi.object().keys({
     id: Joi.string().alphanum().length(24).hex(),
@@ -47,7 +41,6 @@ const celebrateUserUpdateAvatarSchema = {
 module.exports = {
   celebrateUserRegisterSchema,
   celebrateUserLoginSchema,
-  celebrateUserAuthSchema,
   celebrateUserGetUserIdSchema,
   celebrateUserUpdateProfileSchema,
   celebrateUserUpdateAvatarSchema,
