@@ -2,12 +2,11 @@ const { Joi, Segments } = require('celebrate');
 
 // eslint-disable-next-line max-len
 // const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_+=])[A-Za-z\d!@#$%^&*()\-_+=]{8,}$/;
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])[A-Za-z\d!@#$%^&*()\-_+=]{8,}$/;
 
 const celebrateUserLoginSchema = {
   [Segments.BODY]: Joi.object().keys({
     email: Joi.string().email().required(),
-    password: Joi.string().pattern(passwordRegex).required(),
+    password: Joi.string().min(8).required(),
   }),
 };
 
@@ -17,7 +16,7 @@ const celebrateUserRegisterSchema = {
     about: Joi.string().min(2).max(30),
     avatar: Joi.string(),
     email: Joi.string().email().required(),
-    password: Joi.string().pattern(passwordRegex).required(),
+    password: Joi.string().min(8).required(),
   }),
 };
 
