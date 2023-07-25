@@ -15,7 +15,7 @@ const celebrateUserRegisterSchema = {
   [Segments.BODY]: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().uri(),
+    avatar: Joi.string(),
     email: Joi.string().email().required(),
     password: Joi.string().pattern(passwordRegex).required(),
   }),
@@ -36,7 +36,7 @@ const celebrateUserUpdateProfileSchema = {
 
 const celebrateUserUpdateAvatarSchema = {
   [Segments.BODY]: Joi.object().keys({
-    avatar: Joi.string().uri(),
+    avatar: Joi.string(),
   }),
 };
 
