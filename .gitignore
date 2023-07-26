@@ -15,4 +15,4 @@ node_modules
 .vscode
 
 # Переменные окружения
-#.env
+.env
